@@ -18,5 +18,8 @@ def reader(ser):
 def decoder(decode, ID):
     temp = []
     try: 
-        for i in range(len(decode)):
-            if 
+        temp = decode.split(",")
+        print(temp)
+    except:
+        print("error")
+    
