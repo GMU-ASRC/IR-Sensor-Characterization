@@ -21,5 +21,4 @@ def decoder(decode, ID):
         temp = decode.split(",")
         print(temp)
     except:
-        print("error")
-    
+           
