@@ -88,7 +88,8 @@ def read_serial_and_plot():
     converts numeric positions to angles, and updates the plot with a fixed branch length of 0.25 m.
     """
     try:
-        ser = serial.Serial('COM9', baudrate=38400, timeout=1)
+        ser = serial.Serial('/dev/tty.usbmodem1101', baudrate=38400, timeout=1)
+        print("serial connected")
     except Exception as e:
         print("Could not open serial port:", e)
         return
@@ -98,10 +99,12 @@ def read_serial_and_plot():
     while True:
         try:
             line_bytes = ser.readline()
+            print(line_bytes)
             if not line_bytes:
                 continue
             try:
                 line_decoded = line_bytes.decode('utf-8').strip()
+                print(line_decoded)
             except Exception as e:
                 print("Decode error:", e)
                 continue
