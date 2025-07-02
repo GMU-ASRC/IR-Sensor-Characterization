@@ -5,10 +5,28 @@ import matplotlib.pyplot as plt
 
 # Mapping lists (first list of numbers and corresponding angles)
 mapping_numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]
-mapping_angles  = [11.25, 33.75, 56.25, 78.75, 101.25, 123.75, 146.25, 168.75, 191.25, 213.75, 236.25, 258.75, 281.25, 303.75, 326.25, 348.75]
+mapping_angles = [
+    11.25,
+    33.75,
+    56.25,
+    78.75,
+    101.25,
+    123.75,
+    146.25,
+    168.75,
+    191.25,
+    213.75,
+    236.25,
+    258.75,
+    281.25,
+    303.75,
+    326.25,
+    348.75,
+]
 
 # Allowed tokens (3-letter codes)
-allowed_tokens = ['72A', '72B', '72C', '72D']
+allowed_tokens = ["23A", "23B", "23C", "23D"]
+
 
 def process_line(line):
     """
@@ -17,9 +35,9 @@ def process_line(line):
     at least three characters and whose first three characters match an allowed token,
     create an entry "Token:position" where position is comma index + 1.
     """
-    if line.startswith('[') and line.endswith(']'):
+    if line.startswith("[") and line.endswith("]"):
         line = line[1:-1]
-    tokens = line.split(',')
+    tokens = line.split(",")
     allowed_data = []
     for idx, token in enumerate(tokens):
         token = token.strip()
@@ -28,6 +46,7 @@ def process_line(line):
             if first_three in allowed_tokens:
                 allowed_data.append(f"{first_three}:{idx+1}")
     return allowed_data
+
 
 def plot_branch(distance, angle, label):
     """
@@ -40,8 +59,9 @@ def plot_branch(distance, angle, label):
     phi = math.radians(90 - angle)
     x = distance * math.cos(phi)
     y = distance * math.sin(phi)
-    plt.plot([0, x], [0, y], marker='o', label=f"{label} ({angle}°)")
+    plt.plot([0, x], [0, y], marker="o", label=f"{label} ({angle}°)")
     plt.text(x, y, f" {label}", fontsize=9)
+
 
 def update_plot(allowed_data, distance):
     """
@@ -54,10 +74,10 @@ def update_plot(allowed_data, distance):
         print("Plotting allowed data:", allowed_data)
     else:
         print("No allowed data to plot.")
-        
+
     for entry in allowed_data:
         try:
-            token, num_str = entry.split(':')
+            token, num_str = entry.split(":")
             num = int(num_str)
             # Convert the numeric label to an angle using the mapping lists
             idx = mapping_numbers.index(num)
@@ -65,22 +85,23 @@ def update_plot(allowed_data, distance):
         except Exception as e:
             print(f"Error processing entry '{entry}':", e)
             continue
-        
+
         else:
             plot_branch(distance, angle, token)
-        
+
     # Draw coordinate axes and labels
-    plt.axhline(0, color='black', linewidth=0.5)
-    plt.axvline(0, color='black', linewidth=0.5)
+    plt.axhline(0, color="black", linewidth=0.5)
+    plt.axvline(0, color="black", linewidth=0.5)
     plt.xlabel("X (m)")
     plt.ylabel("Y (m)")
     plt.title("Live 2D Plot of Allowed Data (Distance = 0.25 m)")
     plt.grid(True)
-    plt.xlim(-.3,.3)
-    plt.ylim(-.3,.3)
+    plt.xlim(-0.3, 0.3)
+    plt.ylim(-0.3, 0.3)
     plt.legend()
     plt.draw()
     plt.pause(0.1)
+
 
 def read_serial_and_plot():
     """
@@ -88,7 +109,7 @@ def read_serial_and_plot():
     converts numeric positions to angles, and updates the plot with a fixed branch length of 0.25 m.
     """
     try:
-        ser = serial.Serial('COM9', baudrate=38400, timeout=1)
+        ser = serial.Serial("COM14", baudrate=38400, timeout=1)
     except Exception as e:
         print("Could not open serial port:", e)
         return
@@ -101,7 +122,7 @@ def read_serial_and_plot():
             if not line_bytes:
                 continue
             try:
-                line_decoded = line_bytes.decode('utf-8').strip()
+                line_decoded = line_bytes.decode("utf-8").strip()
             except Exception as e:
                 print("Decode error:", e)
                 continue
@@ -112,5 +133,6 @@ def read_serial_and_plot():
         except Exception as e:
             print("Error reading serial:", e)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     read_serial_and_plot()

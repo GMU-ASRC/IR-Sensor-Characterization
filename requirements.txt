@@ -1,0 +1,4 @@
+pyserial
+time
+argparse
+matplotlib.pylot
