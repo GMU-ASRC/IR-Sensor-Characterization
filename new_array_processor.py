@@ -55,7 +55,7 @@ def update_plot(ax, data):
         x = DISTANCE * math.cos(phi)
         y = DISTANCE * math.sin(phi)
         ax.plot([0, x], [0, y], "o-")
-        ax.text(x, y, f"{token} ({ang:.0f}°)", fontsize=9)
+        ax.text(x, y, f"{token} ({ang:.0f}°) ({pos})", fontsize=9)
 
     # lock axes to a square from –DISTANCE to +DISTANCE
     ax.set_xlim(-DISTANCE, DISTANCE)
