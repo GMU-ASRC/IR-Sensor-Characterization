@@ -3,6 +3,8 @@ import math
 import time
 import matplotlib.pyplot as plt
 import argparse
+import csv
+
 
 # --- CONFIG ---
 
@@ -68,6 +70,20 @@ def update_plot(ax, data):
     ax.set_ylabel("Y (m)")
     ax.set_title(f"Live 2D Plot (±{DISTANCE:.2f} m)")
     ax.grid(True)
+
+def to_csv(data):
+    """
+    Takes the detected ID's and the angle its seen at at transfers them into a csv file
+    """
+    with open('data.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+    data_header = ['ID', 'Angle']
+    writer.writerow(data_header)
+    for token, pos in data:
+        angle = mapping.get(pos)
+        formatted_data = [token, pos]
+        writer.writerow(formatted_data)
+    
 
 
 def main(id, port):
