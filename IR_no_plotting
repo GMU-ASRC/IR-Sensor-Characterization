@@ -1,16 +1,12 @@
 import serial
 import math
-import matplotlib.pyplot as plt
 import argparse
 import csv
 
 # --- CONFIG ---
-
-# PORT = "COM14"
+# PORT example: "COM14"
 BAUD = 38400
-DISTANCE = 0.25  # meters
 SERIAL_TIMEOUT = 0.01  # seconds
-PAUSE_INTERVAL = 0.01  # seconds
 
 # Mapping from sensor position (1–15,0) to angle
 mapping = {
@@ -44,32 +40,6 @@ def parse_serial(line, allowed_tokens):
     return out
 
 
-def update_plot(ax, data):
-    """Clear & redraw points, with fixed axis limits."""
-    ax.clear()
-    for token, pos in data:
-        ang = mapping.get(pos)
-        if ang is None:
-            continue
-        phi = math.radians(90 - ang)
-        x = DISTANCE * math.cos(phi)
-        y = DISTANCE * math.sin(phi)
-        ax.plot([0, x], [0, y], "o-")
-        ax.text(x, y, f"{token} ({ang:.0f}°) ({pos})", fontsize=9)
-
-    # lock axes to a square from –DISTANCE to +DISTANCE
-    ax.set_xlim(-DISTANCE, DISTANCE)
-    ax.set_ylim(-DISTANCE, DISTANCE)
-    ax.set_aspect("equal", "box")
-
-    ax.axhline(0, color="black", lw=0.5)
-    ax.axvline(0, color="black", lw=0.5)
-    ax.set_xlabel("X (m)")
-    ax.set_ylabel("Y (m)")
-    ax.set_title(f"Live 2D Plot (±{DISTANCE:.2f} m)")
-    ax.grid(True)
-
-
 def to_csv(data):
     """
     Append sensor IDs and positions (as angles) to CSV.
@@ -80,7 +50,7 @@ def to_csv(data):
             writer.writerow([token, pos])
 
 
-def main(id, port):
+def main(sensor_id, port):
     # Initialize CSV with header once
     try:
         with open("data.csv", "w", newline="") as csvfile:
@@ -89,21 +59,22 @@ def main(id, port):
     except Exception as e:
         print("CSV initialization error:", e)
 
+    # Connect to serial port
     try:
         ser = serial.Serial(port, BAUD, timeout=SERIAL_TIMEOUT)
-        print("Serial connected")
+        print(f"Serial connected on {port} at {BAUD} baud")
     except Exception as e:
         print("Serial error:", e)
         return
 
-    plt.ion()
-    fig, ax = plt.subplots(figsize=(6, 6))
-    allowed_tokens = {f"{id}A", f"{id}B", f"{id}C", f"{id}D"}
-    # static axes setup
-    ax.set_xlim(-DISTANCE, DISTANCE)
-    ax.set_ylim(-DISTANCE, DISTANCE)
-    ax.set_aspect("equal", "box")
+    allowed_tokens = {
+        f"{sensor_id}A",
+        f"{sensor_id}B",
+        f"{sensor_id}C",
+        f"{sensor_id}D",
+    }
 
+    # Main loop: read, parse, log
     while True:
         raw = ser.readline().decode("utf-8", errors="ignore")
         line = raw.strip()
@@ -111,23 +82,21 @@ def main(id, port):
         if line:
             data = parse_serial(line, allowed_tokens)
             if data:
-                angles = [mapping[p] for _, p in data if p in mapping]
+                angles = [mapping.get(pos) for _, pos in data if pos in mapping]
                 print("Angle array:", angles)
-                update_plot(ax, data)
                 to_csv(data)
-
-        plt.pause(PAUSE_INTERVAL)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog="IR Sensors", description="parses IR sensor information into an fov"
+        prog="IR Sensors (no-plot)",
+        description="Parses IR sensor data and logs to CSV as fast as possible",
     )
     parser.add_argument(
-        "-i", "--id", required=True, help="ID Of IR sensor you want data from"
+        "-i", "--id", required=True, help="ID of IR sensor to read (e.g., '23')"
     )
     parser.add_argument(
-        "-p", "--port", required=True, help="Correct port to connect to IR sensor"
+        "-p", "--port", required=True, help="Serial port for IR sensor (e.g., 'COM14')"
     )
     args = parser.parse_args()
     main(args.id, args.port)
